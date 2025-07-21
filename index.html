@@ -263,6 +263,7 @@
         let tileIdCounter = 0;
         let movingTiles = new Map();
         let mergedTiles = new Set();
+        let isAnimating = false;
         
         const grid = document.getElementById('grid');
         const scoreElement = document.getElementById('score');
@@ -277,6 +278,7 @@
             tileIdCounter = 0;
             movingTiles.clear();
             mergedTiles.clear();
+            isAnimating = false;
             updateDisplay();
             addRandomTile();
             addRandomTile();
@@ -318,16 +320,44 @@
                         const tile = document.createElement('div');
                         tile.className = `tile tile-${cell.value}`;
                         tile.textContent = cell.value;
-                        tile.style.left = `${c * 80 + 10}px`;
-                        tile.style.top = `${r * 80 + 10}px`;
                         tile.setAttribute('data-id', cell.id);
+                        
+                        // Handle tile positioning and animations
+                        const currentPos = {
+                            left: c * 80 + 10,
+                            top: r * 80 + 10
+                        };
+                        
+                        // Check if this tile was moving
+                        if (movingTiles.has(cell.id)) {
+                            const oldPos = movingTiles.get(cell.id);
+                            
+                            // Start at old position
+                            tile.style.left = `${oldPos.left}px`;
+                            tile.style.top = `${oldPos.top}px`;
+                            
+                            // Force a reflow to ensure starting position is set
+                            tile.offsetHeight;
+                            
+                            // Animate to new position
+                            tile.style.left = `${currentPos.left}px`;
+                            tile.style.top = `${currentPos.top}px`;
+                            
+                            movingTiles.delete(cell.id);
+                        } else {
+                            // Static positioning for non-moving tiles
+                            tile.style.left = `${currentPos.left}px`;
+                            tile.style.top = `${currentPos.top}px`;
+                        }
                         
                         // Add animation classes
                         if (cell.isNew) {
                             tile.classList.add('tile-new');
                             // Remove the flag after animation
                             setTimeout(() => {
-                                board[r][c].isNew = false;
+                                if (board[r] && board[r][c]) {
+                                    board[r][c].isNew = false;
+                                }
                             }, 200);
                         }
                         
