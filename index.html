@@ -96,8 +96,53 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.5rem;
-            transition: all 0.15s ease-in-out;
+            transition: all 0.2s ease-in-out;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .tile-new {
+            animation: tileAppear 0.2s ease-in-out;
+        }
+
+        .tile-merged {
+            animation: tileMerge 0.2s ease-in-out;
+        }
+
+        @keyframes tileAppear {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes tileMerge {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes scoreIncrease {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); color: #f67c5f; }
+            100% { transform: scale(1); }
+        }
+
+        .score-animation {
+            animation: scoreIncrease 0.3s ease-in-out;
         }
 
         .tile-2 { background: #eee4da; color: #776e65; }
@@ -215,6 +260,9 @@
         let score = 0;
         let best = parseInt(localStorage.getItem('best2048') || '0');
         let hasWon = false;
+        let tileIdCounter = 0;
+        let movingTiles = new Map();
+        let mergedTiles = new Set();
         
         const grid = document.getElementById('grid');
         const scoreElement = document.getElementById('score');
@@ -223,9 +271,12 @@
         const gameOverText = document.getElementById('gameOverText');
 
         function initBoard() {
-            board = Array(4).fill().map(() => Array(4).fill(0));
+            board = Array(4).fill().map(() => Array(4).fill({value: 0, id: null}));
             score = 0;
             hasWon = false;
+            tileIdCounter = 0;
+            movingTiles.clear();
+            mergedTiles.clear();
             updateDisplay();
             addRandomTile();
             addRandomTile();
@@ -237,7 +288,7 @@
             const emptyCells = [];
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
-                    if (board[r][c] === 0) {
+                    if (board[r][c].value === 0) {
                         emptyCells.push({r, c});
                     }
                 }
@@ -245,7 +296,12 @@
             
             if (emptyCells.length > 0) {
                 const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                board[randomCell.r][randomCell.c] = Math.random() < 0.9 ? 2 : 4;
+                const newValue = Math.random() < 0.9 ? 2 : 4;
+                board[randomCell.r][randomCell.c] = {
+                    value: newValue,
+                    id: tileIdCounter++,
+                    isNew: true
+                };
             }
         }
 
@@ -257,15 +313,41 @@
             // Add current tiles
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
-                    if (board[r][c] !== 0) {
+                    const cell = board[r][c];
+                    if (cell.value !== 0) {
                         const tile = document.createElement('div');
-                        tile.className = `tile tile-${board[r][c]}`;
-                        tile.textContent = board[r][c];
+                        tile.className = `tile tile-${cell.value}`;
+                        tile.textContent = cell.value;
                         tile.style.left = `${c * 80 + 10}px`;
                         tile.style.top = `${r * 80 + 10}px`;
+                        tile.setAttribute('data-id', cell.id);
+                        
+                        // Add animation classes
+                        if (cell.isNew) {
+                            tile.classList.add('tile-new');
+                            // Remove the flag after animation
+                            setTimeout(() => {
+                                board[r][c].isNew = false;
+                            }, 200);
+                        }
+                        
+                        if (mergedTiles.has(cell.id)) {
+                            tile.classList.add('tile-merged');
+                            mergedTiles.delete(cell.id);
+                        }
+                        
                         grid.appendChild(tile);
                     }
                 }
+            }
+
+            // Animate score change
+            const currentScore = parseInt(scoreElement.textContent);
+            if (score > currentScore) {
+                scoreElement.classList.add('score-animation');
+                setTimeout(() => {
+                    scoreElement.classList.remove('score-animation');
+                }, 300);
             }
 
             scoreElement.textContent = score;
@@ -279,11 +361,12 @@
 
         function move(direction) {
             let moved = false;
-            let newBoard = board.map(row => [...row]);
+            let newBoard = board.map(row => row.map(cell => ({...cell})));
+            mergedTiles.clear();
 
             if (direction === 'left' || direction === 'right') {
                 for (let r = 0; r < 4; r++) {
-                    let row = newBoard[r].filter(val => val !== 0);
+                    let row = newBoard[r].filter(cell => cell.value !== 0);
                     
                     if (direction === 'right') {
                         row.reverse();
@@ -291,22 +374,24 @@
 
                     // Merge tiles
                     for (let i = 0; i < row.length - 1; i++) {
-                        if (row[i] === row[i + 1]) {
-                            row[i] *= 2;
-                            row[i + 1] = 0;
-                            score += row[i];
+                        if (row[i].value === row[i + 1].value) {
+                            row[i].value *= 2;
+                            row[i].id = tileIdCounter++;
+                            mergedTiles.add(row[i].id);
+                            row[i + 1] = {value: 0, id: null};
+                            score += row[i].value;
                             
-                            if (row[i] === 2048 && !hasWon) {
+                            if (row[i].value === 2048 && !hasWon) {
                                 hasWon = true;
-                                setTimeout(() => showGameOver(true), 300);
+                                setTimeout(() => showGameOver(true), 500);
                             }
                         }
                     }
 
-                    row = row.filter(val => val !== 0);
+                    row = row.filter(cell => cell.value !== 0);
                     
                     while (row.length < 4) {
-                        row.push(0);
+                        row.push({value: 0, id: null});
                     }
 
                     if (direction === 'right') {
@@ -319,8 +404,8 @@
                 for (let c = 0; c < 4; c++) {
                     let column = [];
                     for (let r = 0; r < 4; r++) {
-                        if (newBoard[r][c] !== 0) {
-                            column.push(newBoard[r][c]);
+                        if (newBoard[r][c].value !== 0) {
+                            column.push({...newBoard[r][c]});
                         }
                     }
 
@@ -330,22 +415,24 @@
 
                     // Merge tiles
                     for (let i = 0; i < column.length - 1; i++) {
-                        if (column[i] === column[i + 1]) {
-                            column[i] *= 2;
-                            column[i + 1] = 0;
-                            score += column[i];
+                        if (column[i].value === column[i + 1].value) {
+                            column[i].value *= 2;
+                            column[i].id = tileIdCounter++;
+                            mergedTiles.add(column[i].id);
+                            column[i + 1] = {value: 0, id: null};
+                            score += column[i].value;
                             
-                            if (column[i] === 2048 && !hasWon) {
+                            if (column[i].value === 2048 && !hasWon) {
                                 hasWon = true;
-                                setTimeout(() => showGameOver(true), 300);
+                                setTimeout(() => showGameOver(true), 500);
                             }
                         }
                     }
 
-                    column = column.filter(val => val !== 0);
+                    column = column.filter(cell => cell.value !== 0);
                     
                     while (column.length < 4) {
-                        column.push(0);
+                        column.push({value: 0, id: null});
                     }
 
                     if (direction === 'down') {
@@ -361,7 +448,7 @@
             // Check if board changed
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
-                    if (board[r][c] !== newBoard[r][c]) {
+                    if (board[r][c].value !== newBoard[r][c].value) {
                         moved = true;
                         break;
                     }
@@ -378,7 +465,7 @@
                     if (isGameOver()) {
                         setTimeout(() => showGameOver(false), 300);
                     }
-                }, 150);
+                }, 200);
             }
         }
 
@@ -386,16 +473,16 @@
             // Check for empty cells
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
-                    if (board[r][c] === 0) return false;
+                    if (board[r][c].value === 0) return false;
                 }
             }
 
             // Check for possible merges
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
-                    const current = board[r][c];
-                    if ((r < 3 && board[r + 1][c] === current) ||
-                        (c < 3 && board[r][c + 1] === current)) {
+                    const current = board[r][c].value;
+                    if ((r < 3 && board[r + 1][c].value === current) ||
+                        (c < 3 && board[r][c + 1].value === current)) {
                         return false;
                     }
                 }
