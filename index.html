@@ -81,7 +81,7 @@
             }
         }
 
-        .restart-button, .new-game-button, .lock-screen-button {
+        .restart-button, .new-game-button {
             display: inline-block;
             background: #8f7a66;
             border-radius: 3px;
@@ -97,13 +97,7 @@
             font-size: 14px;
         }
 
-        .lock-screen-button {
-            background: #2c3e50;
-        }
 
-        .lock-screen-button:hover {
-            background: #34495e;
-        }
 
         .button-container {
             margin-top: 10px;
@@ -300,61 +294,11 @@
             }
         }
 
-        /* Lock screen overlay */
-        .lock-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            flex-direction: column;
-        }
 
-        .lock-overlay.active {
-            display: flex;
-        }
-
-        .lock-content {
-            text-align: center;
-            color: white;
-        }
-
-        .lock-content h2 {
-            font-size: clamp(24px, 6vw, 48px);
-            margin-bottom: 20px;
-        }
-
-        .unlock-button {
-            background: #8f7a66;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 5px;
-            font-size: clamp(16px, 4vw, 20px);
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .unlock-button:hover {
-            background: #9f8a76;
-        }
-
-        /* Prevent scrolling and zooming on mobile */
-        body.locked {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
 
         /* Better mobile touch targets */
         @media (max-width: 600px) {
-            .restart-button, .new-game-button, .lock-screen-button {
+            .restart-button, .new-game-button {
                 min-height: 44px;
                 line-height: 44px;
                 padding: 0 15px;
@@ -391,14 +335,6 @@
     </style>
 </head>
 <body>
-    <div class="lock-overlay" id="lockOverlay">
-        <div class="lock-content">
-            <h2>🔒 Screen Locked</h2>
-            <p>Tap to unlock and continue playing</p>
-            <button class="unlock-button" onclick="unlockScreen()">Unlock</button>
-        </div>
-    </div>
-
     <div class="container">
         <div class="heading">
             <h1 class="title">2048</h1>
@@ -413,7 +349,6 @@
             <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
             <div class="button-container">
                 <a class="restart-button">New Game</a>
-                <button class="lock-screen-button" onclick="lockScreen()">🔒 Lock Screen</button>
             </div>
         </div>
 
@@ -465,22 +400,6 @@
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSf66hYSFxnaQXvXmHlWU2MIGwIn3dkmiQ5iguGazXRKw4cSEg/viewform?usp=dialog" target="_blank" class="form-button">Feedback Form</a>
 
     <script>
-        function lockScreen() {
-            document.getElementById('lockOverlay').classList.add('active');
-            document.body.classList.add('locked');
-            if (window.game) {
-                window.game.stopTimer();
-            }
-        }
-
-        function unlockScreen() {
-            document.getElementById('lockOverlay').classList.remove('active');
-            document.body.classList.remove('locked');
-            if (window.game && !window.game.over && !window.game.won) {
-                window.game.startTimer();
-            }
-        }
-
         class Game2048 {
             constructor() {
                 this.size = 4;
@@ -642,7 +561,9 @@
                 
                 for (let i = 0; i < this.size; i++) {
                     const row = this.grid[i].filter(cell => cell !== 0);
-                    const originalLength = row.length;
+                    
+                    // Track original positions for animation
+                    const originalRow = [...this.grid[i]];
                     
                     for (let j = 0; j < row.length - 1; j++) {
                         if (row[j] === row[j + 1]) {
@@ -658,18 +579,23 @@
                         newRow.push(0);
                     }
                     
-                    if (JSON.stringify(this.grid[i]) !== JSON.stringify(newRow)) {
+                    if (JSON.stringify(originalRow) !== JSON.stringify(newRow)) {
                         moved = true;
                     }
                     this.grid[i] = newRow;
                 }
                 
-                setTimeout(() => {
-                    mergedPositions.forEach(pos => {
-                        const tile = this.getTileAtPosition(pos.row, pos.col);
-                        if (tile) tile.classList.add('tile-merged');
-                    });
-                }, 150);
+                // Add merge animation after tiles have moved
+                if (moved) {
+                    setTimeout(() => {
+                        mergedPositions.forEach(pos => {
+                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
+                            if (tile) {
+                                tile.classList.add('tile-merged');
+                            }
+                        });
+                    }, 160);
+                }
                 
                 return moved;
             }
@@ -680,32 +606,45 @@
                 
                 for (let i = 0; i < this.size; i++) {
                     const row = this.grid[i].filter(cell => cell !== 0);
+                    const originalRow = [...this.grid[i]];
+                    
                     for (let j = row.length - 1; j > 0; j--) {
                         if (row[j] === row[j - 1]) {
                             row[j] *= 2;
                             this.score += row[j];
                             row[j - 1] = 0;
-                            const filteredRow = row.filter(cell => cell !== 0);
-                            const finalCol = this.size - filteredRow.length + filteredRow.indexOf(row[j]);
-                            mergedPositions.push({row: i, col: finalCol, value: row[j]});
                         }
                     }
+                    
                     const newRow = row.filter(cell => cell !== 0);
                     while (newRow.length < this.size) {
                         newRow.unshift(0);
                     }
-                    if (JSON.stringify(this.grid[i]) !== JSON.stringify(newRow)) {
+                    
+                    // Find merged positions after filtering
+                    for (let j = 0; j < this.size; j++) {
+                        if (newRow[j] !== 0 && originalRow[j] === 0) {
+                            // This is a merged tile
+                            mergedPositions.push({row: i, col: j, value: newRow[j]});
+                        }
+                    }
+                    
+                    if (JSON.stringify(originalRow) !== JSON.stringify(newRow)) {
                         moved = true;
                     }
                     this.grid[i] = newRow;
                 }
                 
-                setTimeout(() => {
-                    mergedPositions.forEach(pos => {
-                        const tile = this.getTileAtPosition(pos.row, pos.col);
-                        if (tile) tile.classList.add('tile-merged');
-                    });
-                }, 150);
+                if (moved) {
+                    setTimeout(() => {
+                        mergedPositions.forEach(pos => {
+                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
+                            if (tile) {
+                                tile.classList.add('tile-merged');
+                            }
+                        });
+                    }, 160);
+                }
                 
                 return moved;
             }
@@ -716,11 +655,15 @@
                 
                 for (let j = 0; j < this.size; j++) {
                     const column = [];
+                    const originalColumn = [];
+                    
                     for (let i = 0; i < this.size; i++) {
+                        originalColumn[i] = this.grid[i][j];
                         if (this.grid[i][j] !== 0) {
                             column.push(this.grid[i][j]);
                         }
                     }
+                    
                     for (let i = 0; i < column.length - 1; i++) {
                         if (column[i] === column[i + 1]) {
                             column[i] *= 2;
@@ -729,24 +672,30 @@
                             mergedPositions.push({row: i, col: j, value: column[i]});
                         }
                     }
+                    
                     const newColumn = column.filter(cell => cell !== 0);
                     while (newColumn.length < this.size) {
                         newColumn.push(0);
                     }
+                    
                     for (let i = 0; i < this.size; i++) {
-                        if (this.grid[i][j] !== newColumn[i]) {
+                        if (originalColumn[i] !== newColumn[i]) {
                             moved = true;
                         }
                         this.grid[i][j] = newColumn[i];
                     }
                 }
                 
-                setTimeout(() => {
-                    mergedPositions.forEach(pos => {
-                        const tile = this.getTileAtPosition(pos.row, pos.col);
-                        if (tile) tile.classList.add('tile-merged');
-                    });
-                }, 150);
+                if (moved) {
+                    setTimeout(() => {
+                        mergedPositions.forEach(pos => {
+                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
+                            if (tile) {
+                                tile.classList.add('tile-merged');
+                            }
+                        });
+                    }, 160);
+                }
                 
                 return moved;
             }
@@ -757,39 +706,53 @@
                 
                 for (let j = 0; j < this.size; j++) {
                     const column = [];
+                    const originalColumn = [];
+                    
                     for (let i = 0; i < this.size; i++) {
+                        originalColumn[i] = this.grid[i][j];
                         if (this.grid[i][j] !== 0) {
                             column.push(this.grid[i][j]);
                         }
                     }
+                    
                     for (let i = column.length - 1; i > 0; i--) {
                         if (column[i] === column[i - 1]) {
                             column[i] *= 2;
                             this.score += column[i];
                             column[i - 1] = 0;
-                            const filteredColumn = column.filter(cell => cell !== 0);
-                            const finalRow = this.size - filteredColumn.length + filteredColumn.indexOf(column[i]);
-                            mergedPositions.push({row: finalRow, col: j, value: column[i]});
                         }
                     }
+                    
                     const newColumn = column.filter(cell => cell !== 0);
                     while (newColumn.length < this.size) {
                         newColumn.unshift(0);
                     }
+                    
+                    // Find merged positions
                     for (let i = 0; i < this.size; i++) {
-                        if (this.grid[i][j] !== newColumn[i]) {
+                        if (newColumn[i] !== 0 && originalColumn[i] === 0) {
+                            mergedPositions.push({row: i, col: j, value: newColumn[i]});
+                        }
+                    }
+                    
+                    for (let i = 0; i < this.size; i++) {
+                        if (originalColumn[i] !== newColumn[i]) {
                             moved = true;
                         }
                         this.grid[i][j] = newColumn[i];
                     }
                 }
                 
-                setTimeout(() => {
-                    mergedPositions.forEach(pos => {
-                        const tile = this.getTileAtPosition(pos.row, pos.col);
-                        if (tile) tile.classList.add('tile-merged');
-                    });
-                }, 150);
+                if (moved) {
+                    setTimeout(() => {
+                        mergedPositions.forEach(pos => {
+                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
+                            if (tile) {
+                                tile.classList.add('tile-merged');
+                            }
+                        });
+                    }, 160);
+                }
                 
                 return moved;
             }
@@ -940,8 +903,6 @@
 
             bindEvents() {
                 document.addEventListener('keydown', (e) => {
-                    if (document.body.classList.contains('locked')) return;
-                    
                     if (e.key === 'ArrowUp') {
                         e.preventDefault();
                         this.move('up');
@@ -963,8 +924,6 @@
                 const minSwipeDistance = 30;
                 
                 this.gridContainer.addEventListener('touchstart', (e) => {
-                    if (document.body.classList.contains('locked')) return;
-                    
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
                     isSwiping = false;
@@ -972,12 +931,10 @@
                 }, { passive: false });
 
                 this.gridContainer.addEventListener('touchmove', (e) => {
-                    if (document.body.classList.contains('locked')) return;
                     e.preventDefault();
                 }, { passive: false });
 
                 this.gridContainer.addEventListener('touchend', (e) => {
-                    if (document.body.classList.contains('locked')) return;
                     if (!startX || !startY) return;
                     
                     const endX = e.changedTouches[0].clientX;
