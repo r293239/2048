@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048</title>
+    <title>2048 - Enhanced</title>
     <style>
         * {
             margin: 0;
@@ -14,13 +14,63 @@
         body {
             font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
             color: #776e65;
-            background: #faf8ef;
+            background: linear-gradient(135deg, #faf8ef 0%, #f4f1e8 100%);
             font-size: 18px;
             margin: 0;
             padding: 20px;
             padding-bottom: 120px;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #faf8ef 0%, #f4f1e8 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-title {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #776e65;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ede0c8;
+            border-top: 4px solid #f2b179;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .container {
@@ -28,6 +78,17 @@
             max-width: 500px;
             margin: 0 auto;
             text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1 {
@@ -35,6 +96,7 @@
             font-weight: bold;
             margin: 0;
             color: #776e65;
+            text-shadow: 2px 2px 4px rgba(119, 110, 101, 0.1);
         }
 
         .scores-container {
@@ -47,16 +109,22 @@
         }
 
         .score-container, .best-container, .timer-container {
-            background: #bbada0;
+            background: linear-gradient(135deg, #bbada0 0%, #a89b8e 100%);
             padding: 3px 10px;
             font-size: clamp(16px, 4vw, 25px);
             font-weight: bold;
-            border-radius: 3px;
+            border-radius: 6px;
             color: white;
             text-align: center;
             min-width: clamp(70px, 15vw, 100px);
             flex: 1;
             max-width: 120px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .score-container:hover, .best-container:hover, .timer-container:hover {
+            transform: translateY(-2px);
         }
 
         .score-addition {
@@ -83,8 +151,8 @@
 
         .restart-button, .new-game-button {
             display: inline-block;
-            background: #8f7a66;
-            border-radius: 3px;
+            background: linear-gradient(135deg, #8f7a66 0%, #7d6854 100%);
+            border-radius: 6px;
             padding: 0 20px;
             text-decoration: none;
             color: #f9f6f2;
@@ -95,9 +163,31 @@
             cursor: pointer;
             border: none;
             font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
+        .restart-button::before, .new-game-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
 
+        .restart-button:hover::before, .new-game-button:hover::before {
+            left: 100%;
+        }
+
+        .restart-button:hover, .new-game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
 
         .button-container {
             margin-top: 10px;
@@ -113,14 +203,20 @@
         }
 
         .grid-container {
-            background: #bbada0;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #bbada0 0%, #a89b8e 100%);
+            border-radius: 15px;
             width: 100%;
             max-width: 500px;
             aspect-ratio: 1;
             position: relative;
             padding: clamp(10px, 3vw, 15px);
             margin: 0 auto;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .grid-container:hover {
+            transform: scale(1.02);
         }
 
         .grid-row {
@@ -136,8 +232,9 @@
         .grid-cell {
             flex: 1;
             background: rgba(238, 228, 218, 0.35);
-            border-radius: 6px;
+            border-radius: 8px;
             margin-right: clamp(8px, 2.5vw, 15px);
+            transition: all 0.3s ease;
         }
 
         .grid-cell:last-child {
@@ -156,7 +253,7 @@
         .tile {
             position: absolute;
             background: #eee4da;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             text-align: center;
             display: flex;
@@ -166,21 +263,58 @@
             transition: all 0.15s ease-in-out;
             width: calc((100% - 3 * clamp(8px, 2.5vw, 15px)) / 4);
             height: calc((100% - 3 * clamp(8px, 2.5vw, 15px)) / 4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .tile-2 { background: #eee4da; color: #776e65; }
-        .tile-4 { background: #ede0c8; color: #776e65; }
-        .tile-8 { background: #f2b179; color: #f9f6f2; }
-        .tile-16 { background: #f59563; color: #f9f6f2; }
-        .tile-32 { background: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
-        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
-        .tile-512 { background: #edc850; color: #f9f6f2; font-size: clamp(20px, 5vw, 45px); }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: clamp(18px, 4.5vw, 35px); }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: clamp(18px, 4.5vw, 35px); box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+        .tile-2 { background: linear-gradient(135deg, #eee4da 0%, #e8dcc6 100%); color: #776e65; }
+        .tile-4 { background: linear-gradient(135deg, #ede0c8 0%, #e2d2b0 100%); color: #776e65; }
+        .tile-8 { background: linear-gradient(135deg, #f2b179 0%, #f0a458 100%); color: #f9f6f2; }
+        .tile-16 { background: linear-gradient(135deg, #f59563 0%, #f3853f 100%); color: #f9f6f2; }
+        .tile-32 { background: linear-gradient(135deg, #f67c5f 0%, #f4633c 100%); color: #f9f6f2; }
+        .tile-64 { background: linear-gradient(135deg, #f65e3b 0%, #f44a1f 100%); color: #f9f6f2; }
+        .tile-128 { 
+            background: linear-gradient(135deg, #edcf72 0%, #ebc548 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(20px, 5vw, 45px);
+            box-shadow: 0 4px 15px rgba(237, 207, 114, 0.3);
+        }
+        .tile-256 { 
+            background: linear-gradient(135deg, #edcc61 0%, #ebc239 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(20px, 5vw, 45px);
+            box-shadow: 0 4px 15px rgba(237, 204, 97, 0.3);
+        }
+        .tile-512 { 
+            background: linear-gradient(135deg, #edc850 0%, #ebbd28 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(20px, 5vw, 45px);
+            box-shadow: 0 4px 15px rgba(237, 200, 80, 0.3);
+        }
+        .tile-1024 { 
+            background: linear-gradient(135deg, #edc53f 0%, #ebb917 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(18px, 4.5vw, 35px);
+            box-shadow: 0 6px 20px rgba(237, 197, 63, 0.4);
+        }
+        .tile-2048 { 
+            background: linear-gradient(135deg, #edc22e 0%, #f3d54c 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(18px, 4.5vw, 35px);
+            box-shadow: 0 8px 25px rgba(237, 194, 46, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
 
-        .tile-super { background: #3c3a32; color: #f9f6f2; font-size: clamp(16px, 4vw, 30px); }
+        @keyframes glow {
+            from { box-shadow: 0 8px 25px rgba(237, 194, 46, 0.5); }
+            to { box-shadow: 0 8px 35px rgba(237, 194, 46, 0.8); }
+        }
+
+        .tile-super { 
+            background: linear-gradient(135deg, #3c3a32 0%, #2c2a22 100%); 
+            color: #f9f6f2; 
+            font-size: clamp(16px, 4vw, 30px);
+            box-shadow: 0 8px 25px rgba(60, 58, 50, 0.5);
+        }
 
         .game-message {
             display: none;
@@ -189,14 +323,27 @@
             right: 0;
             bottom: 0;
             left: 0;
-            background: rgba(238, 228, 218, 0.73);
+            background: rgba(238, 228, 218, 0.85);
+            backdrop-filter: blur(10px);
             z-index: 100;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 15px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .game-won .game-message {
-            background: rgba(237, 194, 46, 0.5);
+            background: rgba(237, 194, 46, 0.85);
             color: #f9f6f2;
         }
 
@@ -210,6 +357,7 @@
             height: auto;
             line-height: 1.2;
             margin-top: clamp(80px, 20vw, 150px);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .game-message .lower {
@@ -219,8 +367,8 @@
 
         .game-message a {
             display: inline-block;
-            background: #8f7a66;
-            border-radius: 3px;
+            background: linear-gradient(135deg, #8f7a66 0%, #7d6854 100%);
+            border-radius: 6px;
             padding: 0 20px;
             text-decoration: none;
             color: #f9f6f2;
@@ -228,57 +376,48 @@
             line-height: 42px;
             margin: 5px;
             font-size: clamp(12px, 3vw, 14px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .game-message a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .share-button {
-            background: #3b5998 !important;
-        }
-
-        .form-button {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #8f7a66;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            z-index: 1000;
-            transition: background 0.3s;
-            font-size: clamp(12px, 3vw, 14px);
-        }
-
-        .form-button:hover {
-            background: #9f8a76;
+            background: linear-gradient(135deg, #3b5998 0%, #2d4373 100%) !important;
         }
 
         .game-explanation {
             margin-top: 50px;
-            line-height: 1.5;
+            line-height: 1.6;
             font-size: clamp(14px, 3.5vw, 18px);
+            background: rgba(255,255,255,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .tile-new {
-            animation: appear 200ms ease 100ms;
+            animation: appear 300ms ease 100ms;
             animation-fill-mode: backwards;
         }
 
         .tile-merged {
             z-index: 20;
-            animation: pop 200ms ease 100ms;
+            animation: pop 300ms ease 100ms;
             animation-fill-mode: backwards;
         }
 
         @keyframes appear {
             0% {
                 opacity: 0;
-                transform: scale(0);
+                transform: scale(0) rotate(180deg);
             }
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: scale(1) rotate(0deg);
             }
         }
 
@@ -287,14 +426,12 @@
                 transform: scale(0);
             }
             50% {
-                transform: scale(1.2);
+                transform: scale(1.3);
             }
             100% {
                 transform: scale(1);
             }
         }
-
-
 
         /* Better mobile touch targets */
         @media (max-width: 600px) {
@@ -332,9 +469,26 @@
                 margin-top: 20px;
             }
         }
+
+        /* Success animations */
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        .celebrating {
+            animation: celebrate 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-title">2048</div>
+        <div class="loading-spinner"></div>
+    </div>
+
     <div class="container">
         <div class="heading">
             <h1 class="title">2048</h1>
@@ -396,8 +550,6 @@
             <strong class="important">HOW TO PLAY:</strong> Use your <strong>arrow keys</strong> or <strong>swipe</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
         </p>
     </div>
-
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSf66hYSFxnaQXvXmHlWU2MIGwIn3dkmiQ5iguGazXRKw4cSEg/viewform?usp=dialog" target="_blank" class="form-button">Feedback Form</a>
 
     <script>
         class Game2048 {
@@ -468,15 +620,23 @@
                 const containerRect = this.gridContainer.getBoundingClientRect();
                 const containerPadding = parseFloat(getComputedStyle(this.gridContainer).padding);
                 const availableSize = containerRect.width - (2 * containerPadding);
-                const gap = availableSize * 0.03; // 3% gap
+                const gap = availableSize * 0.03;
                 const tileSize = (availableSize - (3 * gap)) / 4;
                 
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         if (this.grid[i][j] !== 0) {
                             const tile = document.createElement('div');
-                            tile.classList.add('tile', `tile-${this.grid[i][j]}`);
-                            tile.textContent = this.grid[i][j];
+                            const value = this.grid[i][j];
+                            
+                            tile.classList.add('tile');
+                            if (value <= 2048) {
+                                tile.classList.add(`tile-${value}`);
+                            } else {
+                                tile.classList.add('tile-super');
+                            }
+                            
+                            tile.textContent = value;
                             
                             const left = j * (tileSize + gap);
                             const top = i * (tileSize + gap);
@@ -488,11 +648,11 @@
                             
                             tile.dataset.row = i;
                             tile.dataset.col = j;
-                            tile.dataset.value = this.grid[i][j];
+                            tile.dataset.value = value;
                             this.tileContainer.appendChild(tile);
                             
-                            if (this.grid[i][j] > this.highestAchieved) {
-                                this.highestAchieved = this.grid[i][j];
+                            if (value > this.highestAchieved) {
+                                this.highestAchieved = value;
                                 this.updateSpawnLevel();
                             }
                         }
@@ -511,12 +671,6 @@
                 
                 let moved = false;
                 const previousGrid = this.grid.map(row => [...row]);
-                const previousTiles = Array.from(this.tileContainer.children).map(tile => ({
-                    element: tile,
-                    row: parseInt(tile.dataset.row),
-                    col: parseInt(tile.dataset.col),
-                    value: parseInt(tile.dataset.value)
-                }));
                 
                 switch (direction) {
                     case 'up':
@@ -534,12 +688,16 @@
                 }
                 
                 if (moved) {
-                    this.animateMovement(previousTiles, () => {
+                    setTimeout(() => {
                         this.addRandomTile();
                         this.updateDisplay();
                         
                         if (this.hasWon() && !this.won) {
                             this.won = true;
+                            this.gridContainer.classList.add('celebrating');
+                            setTimeout(() => {
+                                this.gridContainer.classList.remove('celebrating');
+                            }, 500);
                             this.showMessage('You Win!', 'game-won');
                         } else if (this.isGameOver()) {
                             this.over = true;
@@ -551,7 +709,7 @@
                             localStorage.setItem('bestScore', this.best);
                             this.updateBestScore();
                         }
-                    });
+                    }, 150);
                 }
             }
 
@@ -561,14 +719,13 @@
                 
                 for (let i = 0; i < this.size; i++) {
                     const row = this.grid[i].filter(cell => cell !== 0);
-                    
-                    // Track original positions for animation
                     const originalRow = [...this.grid[i]];
                     
                     for (let j = 0; j < row.length - 1; j++) {
                         if (row[j] === row[j + 1]) {
                             row[j] *= 2;
                             this.score += row[j];
+                            this.showScoreAddition(row[j], i, j);
                             row[j + 1] = 0;
                             mergedPositions.push({row: i, col: j, value: row[j]});
                         }
@@ -585,7 +742,6 @@
                     this.grid[i] = newRow;
                 }
                 
-                // Add merge animation after tiles have moved
                 if (moved) {
                     setTimeout(() => {
                         mergedPositions.forEach(pos => {
@@ -612,6 +768,7 @@
                         if (row[j] === row[j - 1]) {
                             row[j] *= 2;
                             this.score += row[j];
+                            this.showScoreAddition(row[j], i, this.size - 1);
                             row[j - 1] = 0;
                         }
                     }
@@ -621,29 +778,10 @@
                         newRow.unshift(0);
                     }
                     
-                    // Find merged positions after filtering
-                    for (let j = 0; j < this.size; j++) {
-                        if (newRow[j] !== 0 && originalRow[j] === 0) {
-                            // This is a merged tile
-                            mergedPositions.push({row: i, col: j, value: newRow[j]});
-                        }
-                    }
-                    
                     if (JSON.stringify(originalRow) !== JSON.stringify(newRow)) {
                         moved = true;
                     }
                     this.grid[i] = newRow;
-                }
-                
-                if (moved) {
-                    setTimeout(() => {
-                        mergedPositions.forEach(pos => {
-                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
-                            if (tile) {
-                                tile.classList.add('tile-merged');
-                            }
-                        });
-                    }, 160);
                 }
                 
                 return moved;
@@ -668,6 +806,7 @@
                         if (column[i] === column[i + 1]) {
                             column[i] *= 2;
                             this.score += column[i];
+                            this.showScoreAddition(column[i], i, j);
                             column[i + 1] = 0;
                             mergedPositions.push({row: i, col: j, value: column[i]});
                         }
@@ -719,6 +858,7 @@
                         if (column[i] === column[i - 1]) {
                             column[i] *= 2;
                             this.score += column[i];
+                            this.showScoreAddition(column[i], this.size - 1, j);
                             column[i - 1] = 0;
                         }
                     }
@@ -726,13 +866,6 @@
                     const newColumn = column.filter(cell => cell !== 0);
                     while (newColumn.length < this.size) {
                         newColumn.unshift(0);
-                    }
-                    
-                    // Find merged positions
-                    for (let i = 0; i < this.size; i++) {
-                        if (newColumn[i] !== 0 && originalColumn[i] === 0) {
-                            mergedPositions.push({row: i, col: j, value: newColumn[i]});
-                        }
                     }
                     
                     for (let i = 0; i < this.size; i++) {
@@ -743,18 +876,33 @@
                     }
                 }
                 
-                if (moved) {
-                    setTimeout(() => {
-                        mergedPositions.forEach(pos => {
-                            const tile = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"][data-value="${pos.value}"]`);
-                            if (tile) {
-                                tile.classList.add('tile-merged');
-                            }
-                        });
-                    }, 160);
-                }
-                
                 return moved;
+            }
+
+            showScoreAddition(points, row, col) {
+                const containerRect = this.gridContainer.getBoundingClientRect();
+                const containerPadding = parseFloat(getComputedStyle(this.gridContainer).padding);
+                const availableSize = containerRect.width - (2 * containerPadding);
+                const gap = availableSize * 0.03;
+                const tileSize = (availableSize - (3 * gap)) / 4;
+                
+                const scoreDiv = document.createElement('div');
+                scoreDiv.classList.add('score-addition');
+                scoreDiv.textContent = `+${points}`;
+                
+                const left = col * (tileSize + gap) + tileSize / 2;
+                const top = row * (tileSize + gap) + tileSize / 2;
+                
+                scoreDiv.style.left = `${left}px`;
+                scoreDiv.style.top = `${top}px`;
+                
+                this.tileContainer.appendChild(scoreDiv);
+                
+                setTimeout(() => {
+                    if (scoreDiv.parentNode) {
+                        scoreDiv.parentNode.removeChild(scoreDiv);
+                    }
+                }, 600);
             }
 
             hasWon() {
@@ -769,6 +917,7 @@
             }
 
             isGameOver() {
+                // Check for empty cells
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         if (this.grid[i][j] === 0) {
@@ -777,6 +926,7 @@
                     }
                 }
                 
+                // Check for possible merges
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         const current = this.grid[i][j];
@@ -815,13 +965,17 @@
                             url: window.location.href
                         });
                     } else {
-                        const tempTextarea = document.createElement('textarea');
-                        tempTextarea.value = text + ' - ' + window.location.href;
-                        document.body.appendChild(tempTextarea);
-                        tempTextarea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(tempTextarea);
-                        alert('Results copied to clipboard!');
+                        navigator.clipboard.writeText(text + ' - ' + window.location.href).then(() => {
+                            alert('Results copied to clipboard!');
+                        }).catch(() => {
+                            const tempTextarea = document.createElement('textarea');
+                            tempTextarea.value = text + ' - ' + window.location.href;
+                            document.body.appendChild(tempTextarea);
+                            tempTextarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempTextarea);
+                            alert('Results copied to clipboard!');
+                        });
                     }
                 };
             }
@@ -854,17 +1008,6 @@
                 else if (this.highestAchieved >= 2048 && this.spawnLevel === 5) {
                     this.spawnLevel = 6;
                 }
-            }
-
-            animateMovement(previousTiles, callback) {
-                this.updateDisplay();
-                setTimeout(() => {
-                    if (callback) callback();
-                }, 150);
-            }
-
-            getTileAtPosition(row, col) {
-                return document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
             }
 
             keepPlayingAfterWin() {
@@ -903,30 +1046,20 @@
 
             bindEvents() {
                 document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowUp') {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                         e.preventDefault();
-                        this.move('up');
-                    } else if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        this.move('down');
-                    } else if (e.key === 'ArrowLeft') {
-                        e.preventDefault();
-                        this.move('left');
-                    } else if (e.key === 'ArrowRight') {
-                        e.preventDefault();
-                        this.move('right');
+                        const direction = e.key.replace('Arrow', '').toLowerCase();
+                        this.move(direction);
                     }
                 });
 
-                // Enhanced touch events for mobile - only on game grid
+                // Enhanced touch events for mobile
                 let startX, startY;
-                let isSwiping = false;
                 const minSwipeDistance = 30;
                 
                 this.gridContainer.addEventListener('touchstart', (e) => {
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
-                    isSwiping = false;
                     e.preventDefault();
                 }, { passive: false });
 
@@ -948,17 +1081,9 @@
                     
                     if (Math.max(absDiffX, absDiffY) > minSwipeDistance) {
                         if (absDiffX > absDiffY) {
-                            if (diffX > 0) {
-                                this.move('left');
-                            } else {
-                                this.move('right');
-                            }
+                            this.move(diffX > 0 ? 'left' : 'right');
                         } else {
-                            if (diffY > 0) {
-                                this.move('up');
-                            } else {
-                                this.move('down');
-                            }
+                            this.move(diffY > 0 ? 'up' : 'down');
                         }
                     }
                     
@@ -967,6 +1092,7 @@
                     e.preventDefault();
                 }, { passive: false });
 
+                // Button events
                 document.querySelector('.restart-button').addEventListener('click', () => {
                     this.restart();
                 });
@@ -979,7 +1105,7 @@
                     this.keepPlayingAfterWin();
                 });
 
-                // Handle window resize for responsive updates
+                // Handle window resize
                 window.addEventListener('resize', () => {
                     setTimeout(() => {
                         this.updateDisplay();
@@ -988,9 +1114,22 @@
             }
         }
 
-        // Initialize the game when the page loads
+        // Loading screen and initialization
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+
+        // Initialize the game when everything is loaded
         window.addEventListener('load', () => {
-            window.game = new Game2048();
+            // Simulate loading time for better UX
+            setTimeout(() => {
+                window.game = new Game2048();
+                hideLoadingScreen();
+            }, 1500);
         });
     </script>
 </body>
