@@ -197,6 +197,120 @@
             gap: 5px;
         }
 
+        .fullscreen-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b5998 0%, #2d4373 100%);
+            border-radius: 6px;
+            padding: 0 20px;
+            text-decoration: none;
+            color: #f9f6f2;
+            height: 40px;
+            line-height: 42px;
+            margin: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fullscreen-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .fullscreen-button:hover::before {
+            left: 100%;
+        }
+
+        .fullscreen-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Fullscreen styles */
+        .fullscreen-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #faf8ef 0%, #f4f1e8 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .fullscreen-mode .container {
+            max-width: min(90vw, 90vh, 600px);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .fullscreen-mode .grid-container {
+            max-width: min(70vw, 70vh, 500px);
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .fullscreen-mode h1 {
+            font-size: clamp(30px, 6vw, 50px);
+            margin-bottom: 10px;
+        }
+
+        .fullscreen-mode .game-container {
+            margin-top: 20px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .fullscreen-mode .game-explanation {
+            margin-top: 20px;
+            font-size: clamp(12px, 2.5vw, 16px);
+        }
+
+        .exit-fullscreen {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #8f7a66 0%, #7d6854 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .exit-fullscreen:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
         .game-container {
             margin-top: 40px;
             position: relative;
@@ -435,10 +549,11 @@
 
         /* Better mobile touch targets */
         @media (max-width: 600px) {
-            .restart-button, .new-game-button {
+            .restart-button, .new-game-button, .fullscreen-button {
                 min-height: 44px;
                 line-height: 44px;
                 padding: 0 15px;
+                font-size: 16px;
             }
             
             body {
@@ -448,6 +563,97 @@
             
             .game-explanation {
                 margin-top: 30px;
+            }
+
+            .scores-container {
+                gap: 8px;
+            }
+
+            .score-container, .best-container, .timer-container {
+                font-size: clamp(14px, 4vw, 18px);
+                padding: 8px;
+            }
+
+            .grid-container {
+                max-width: 90vw;
+            }
+
+            /* Mobile fullscreen optimizations */
+            .fullscreen-mode {
+                padding: 10px;
+            }
+
+            .fullscreen-mode .container {
+                max-width: 95vw;
+            }
+
+            .fullscreen-mode .grid-container {
+                max-width: min(85vw, 85vh, 400px);
+            }
+
+            .exit-fullscreen {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+                top: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .fullscreen-mode .container {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                max-width: 95vw;
+                max-height: 95vh;
+            }
+
+            .fullscreen-mode .heading {
+                flex: 0 0 auto;
+                margin-right: 20px;
+            }
+
+            .fullscreen-mode .above-game {
+                display: none;
+            }
+
+            .fullscreen-mode .game-container {
+                flex: 1;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .fullscreen-mode .grid-container {
+                max-width: min(60vw, 80vh, 450px);
+                max-height: 80vh;
+            }
+
+            .fullscreen-mode .game-explanation {
+                display: none;
+            }
+
+            .fullscreen-mode h1 {
+                font-size: clamp(24px, 4vw, 40px);
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+            }
+
+            .fullscreen-mode .scores-container {
+                flex-direction: column;
+                gap: 10px;
+                margin: 20px 0;
+            }
+
+            .fullscreen-mode .score-container, 
+            .fullscreen-mode .best-container, 
+            .fullscreen-mode .timer-container {
+                min-width: auto;
+                width: 100px;
+                font-size: clamp(12px, 2.5vw, 16px);
             }
         }
 
@@ -503,6 +709,7 @@
             <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
             <div class="button-container">
                 <a class="restart-button">New Game</a>
+                <a class="fullscreen-button" id="fullscreenBtn">Fullscreen</a>
             </div>
         </div>
 
@@ -566,6 +773,7 @@
                 this.elapsedTime = 0;
                 this.spawnLevel = 1;
                 this.highestAchieved = 2;
+                this.isFullscreen = false;
                 
                 this.scoreElement = document.getElementById('score');
                 this.bestElement = document.getElementById('best');
@@ -573,6 +781,8 @@
                 this.messageElement = document.querySelector('.game-message');
                 this.tileContainer = document.querySelector('.tile-container');
                 this.gridContainer = document.querySelector('.grid-container');
+                this.containerElement = document.querySelector('.container');
+                this.bodyElement = document.body;
                 
                 this.init();
                 this.bindEvents();
@@ -1044,16 +1254,106 @@
                 return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
 
-            bindEvents() {
-                document.addEventListener('keydown', (e) => {
-                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                        e.preventDefault();
-                        const direction = e.key.replace('Arrow', '').toLowerCase();
-                        this.move(direction);
-                    }
-                });
+            toggleFullscreen() {
+                if (!this.isFullscreen) {
+                    this.enterFullscreen();
+                } else {
+                    this.exitFullscreen();
+                }
+            }
 
-                // Enhanced touch events for mobile
+            enterFullscreen() {
+                this.isFullscreen = true;
+                
+                // Create fullscreen overlay
+                const fullscreenOverlay = document.createElement('div');
+                fullscreenOverlay.className = 'fullscreen-mode';
+                fullscreenOverlay.id = 'fullscreenOverlay';
+                
+                // Create exit button
+                const exitBtn = document.createElement('button');
+                exitBtn.className = 'exit-fullscreen';
+                exitBtn.innerHTML = '×';
+                exitBtn.onclick = () => this.exitFullscreen();
+                
+                // Move container to fullscreen
+                const containerClone = this.containerElement.cloneNode(true);
+                fullscreenOverlay.appendChild(containerClone);
+                fullscreenOverlay.appendChild(exitBtn);
+                
+                document.body.appendChild(fullscreenOverlay);
+                
+                // Update references to cloned elements
+                this.updateElementReferences(containerClone);
+                
+                // Hide original container
+                this.containerElement.style.display = 'none';
+                
+                // Try to enter browser fullscreen
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {
+                        // Fullscreen failed, but our custom fullscreen still works
+                    });
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+                
+                // Update display after short delay
+                setTimeout(() => {
+                    this.updateDisplay();
+                }, 100);
+            }
+
+            exitFullscreen() {
+                this.isFullscreen = false;
+                
+                // Restore original container
+                this.containerElement.style.display = 'block';
+                
+                // Update references back to original elements
+                this.updateElementReferences(this.containerElement);
+                
+                // Remove fullscreen overlay
+                const overlay = document.getElementById('fullscreenOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Exit browser fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                // Update display
+                setTimeout(() => {
+                    this.updateDisplay();
+                }, 100);
+            }
+
+            updateElementReferences(container) {
+                this.scoreElement = container.querySelector('#score');
+                this.bestElement = container.querySelector('#best');
+                this.timerElement = container.querySelector('#timer');
+                this.messageElement = container.querySelector('.game-message');
+                this.tileContainer = container.querySelector('.tile-container');
+                this.gridContainer = container.querySelector('.grid-container');
+                
+                // Re-bind events for the new container
+                this.bindContainerEvents();
+                
+                // Update display with current state
+                this.updateDisplay();
+                this.updateBestScore();
+            }
+
+            bindContainerEvents() {
+                // Touch events for the grid
                 let startX, startY;
                 const minSwipeDistance = 30;
                 
@@ -1092,24 +1392,75 @@
                     e.preventDefault();
                 }, { passive: false });
 
-                // Button events
-                document.querySelector('.restart-button').addEventListener('click', () => {
-                    this.restart();
+                // Button events in the current container
+                const restartBtn = this.gridContainer.closest('.container').querySelector('.restart-button');
+                const retryBtn = this.gridContainer.closest('.container').querySelector('.retry-button');
+                const keepPlayingBtn = this.gridContainer.closest('.container').querySelector('.keep-playing-button');
+                
+                if (restartBtn) {
+                    restartBtn.addEventListener('click', () => this.restart());
+                }
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', () => this.restart());
+                }
+                if (keepPlayingBtn) {
+                    keepPlayingBtn.addEventListener('click', () => this.keepPlayingAfterWin());
+                }
+            }
+            bindEvents() {
+                // Global keyboard events
+                document.addEventListener('keydown', (e) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                        const direction = e.key.replace('Arrow', '').toLowerCase();
+                        this.move(direction);
+                    }
+                    // ESC key to exit fullscreen
+                    if (e.key === 'Escape' && this.isFullscreen) {
+                        this.exitFullscreen();
+                    }
                 });
 
-                document.querySelector('.retry-button').addEventListener('click', () => {
-                    this.restart();
+                // Fullscreen button
+                document.getElementById('fullscreenBtn').addEventListener('click', () => {
+                    this.toggleFullscreen();
                 });
 
-                document.querySelector('.keep-playing-button').addEventListener('click', () => {
-                    this.keepPlayingAfterWin();
+                // Browser fullscreen change events
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement && this.isFullscreen) {
+                        this.exitFullscreen();
+                    }
                 });
+
+                document.addEventListener('webkitfullscreenchange', () => {
+                    if (!document.webkitFullscreenElement && this.isFullscreen) {
+                        this.exitFullscreen();
+                    }
+                });
+
+                // Initial container events
+                this.bindContainerEvents();
 
                 // Handle window resize
                 window.addEventListener('resize', () => {
                     setTimeout(() => {
                         this.updateDisplay();
                     }, 100);
+                });
+
+                // Prevent zoom on mobile
+                document.addEventListener('touchmove', (e) => {
+                    if (e.scale !== 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                // Handle orientation changes
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        this.updateDisplay();
+                    }, 500);
                 });
             }
         }
